@@ -1,8 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, HTTPException, UploadFile
 import pandas as pd
 import joblib
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Cargar Modelos
 pipeline_activos = joblib.load('./assets/pipeline_model_activos.joblib')
@@ -44,3 +54,16 @@ def proyectar_balance():
         "Pasivos proyectados": pasivos_pred.tolist(),
         "Patrimonio proyectado": patrimonio_pred.tolist()
     }
+
+@app.api_route("/upload", methods=["OPTIONS", "POST"])
+def upload_file(file: UploadFile = File(...)):
+    try:
+        # Leer el archivo
+        file_data = file.file.read()
+        # Guardar el archivo en el sistema
+        with open(f"uploads/{file.filename}", "wb") as f:
+            f.write(file_data)
+        
+        return {"message": "Archivo recibido correctamente."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al procesar el archivo: {e}")

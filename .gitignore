@@ -1,0 +1,24 @@
+# Ignorar entornos virtuales
+venv/
+env/
+
+# Ignorar archivos de dependencias y caché de Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignorar archivos de configuración del entorno
+.env
+
+# Ignorar archivos de configuración de IDEs (como VSCode, PyCharm, etc.)
+.vscode/
+.idea/
+
+# Ignorar archivos de logs
+*.log
+
+# Ignorar bases de datos SQLite locales
+*.sqlite3
+
+# Ignorar archivos de Jupyter Notebook checkpoints
+.ipynb_checkpoints/
