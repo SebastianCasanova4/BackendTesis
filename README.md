@@ -5,3 +5,5 @@ This are the main executables of the app:
 - To install the virtualenv tool: python -m venv <directory>
 - To create the venv: python -m venv venv
 - To activate the created env: venv\Scripts\activate.bat or in a powershell venv\Scripts\Activate.ps1
+
+- To run the backend: fastapi dev main.py

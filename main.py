@@ -4,6 +4,12 @@ import joblib
 from fastapi.middleware.cors import CORSMiddleware
 
 
+from assets.models.predictionsModel import projection
+from assets.scripts.dataSeparation_utils import dataSeparation
+from assets.scripts.upload_utils import dataUpload
+
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -15,9 +21,9 @@ app.add_middleware(
 )
 
 # Cargar Modelos
-pipeline_activos = joblib.load('./assets/pipeline_model_activos.joblib')
-pipeline_pasivos = joblib.load('./assets/pipeline_model_pasivos.joblib')
-pipeline_patrimonio = joblib.load('./assets/pipeline_model_patrimonio.joblib')
+pipeline_activos = joblib.load('./assets/models/pipeline_model_activos.joblib')
+pipeline_pasivos = joblib.load('./assets/models/pipeline_model_pasivos.joblib')
+pipeline_patrimonio = joblib.load('./assets/models/pipeline_model_patrimonio.joblib')
 
 # Ruta para la proyección
 @app.get("/proyectar")
@@ -58,12 +64,13 @@ def proyectar_balance():
 @app.api_route("/upload", methods=["OPTIONS", "POST"])
 def upload_file(file: UploadFile = File(...)):
     try:
-        # Leer el archivo
-        file_data = file.file.read()
-        # Guardar el archivo en el sistema
-        with open(f"uploads/{file.filename}", "wb") as f:
-            f.write(file_data)
-        
-        return {"message": "Archivo recibido correctamente."}
+        response, filename = dataUpload(file)
+        dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
+        # exportar el df a excel
+        # dfEstadoResultados.to_excel(f"./output/{filename}_EstadoResultados.xlsx")
+        proyeccionEstadoResultados = projection(4, dfEstadoResultados)
+        filename = filename.split(".")[0]
+        proyeccionEstadoResultados.to_excel(f"./output/{filename}_ProyeccionEstadoResultados.xlsx")
+        return {"message": response}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al procesar el archivo: {e}")

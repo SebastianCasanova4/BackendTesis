@@ -22,3 +22,9 @@ __pycache__/
 
 # Ignorar archivos de Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+# Ignorar archivos de caché de Jupyter Notebook
+.jupyter/
+
+# Ignorar archivos de caché de Python
+.cache/
