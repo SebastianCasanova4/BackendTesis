@@ -68,7 +68,7 @@ def upload_file(file: UploadFile = File(...)):
         dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
         # exportar el df a excel
         # dfEstadoResultados.to_excel(f"./output/{filename}_EstadoResultados.xlsx")
-        proyeccionEstadoResultados = projection(4, dfEstadoResultados)
+        proyeccionEstadoResultados = projection(4, dfEstadoResultados,TIPO_ESTADO_FINANCIERO)
         filename = filename.split(".")[0]
         proyeccionEstadoResultados.to_excel(f"./output/{filename}_ProyeccionEstadoResultados.xlsx")
         return {"message": response}

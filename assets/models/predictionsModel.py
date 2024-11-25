@@ -47,7 +47,9 @@ def projection(cantidadPeriodosPredecir, dataSet):
     dataSet = pd.concat([dataSet, dfPredicciones], axis=0)
     return dataSet
 
-    ## Función que se encarga de entrenar los modelos para cada rubro a proyectar.
+ 
+   ########################### Proyectores Individuales ############################
+   ## Función que se encarga de entrenar los modelos para cada rubro a proyectar.
 def entrenar_modelos(pRubros_proyectar, pDataSet, pTipo_estado_financiero):
     rubros_proyectados = []
     for rubro in pRubros_proyectar:
@@ -78,29 +80,37 @@ def promedio_porcentual_costo_ventas(pDataSet):
 
 
 
-
+# Funcion que se encarga de sacar la temporalidad de los periodos para obtener el parametro que se usa en los modelos de proyeccion
+def obtener_temporalidad(pTipo_estado_financiero):
+    if(pTipo_estado_financiero == "Anual, Indiv."):
+        return 1
+    elif(pTipo_estado_financiero == "Semestral, Indiv."):
+        return 2
+    elif(pTipo_estado_financiero == "Trimestralmente, Indiv."):
+        return 4
+    elif(pTipo_estado_financiero == "Cuatrimestral, Indiv."):
+        return 3
+    elif(pTipo_estado_financiero == "Mensual, Indiv."):
+        return 12
+    return 1
 
 ##Proyección de datos especifica para el Estado de Resultados
 ## @param pTIPO_ESTADO_FINANCIERO = corresponde al valor de la periodicidad de los estados financiero, 1 para años, 2 para semestres, 3 para cuatrimestres, 4 para trimiestres. 12 para mensual.
 def projection_estado_resultados(pCantidad_periodos_proyectar, pDfEstadoResultados, pTipo_estado_financiero = 1):
     
-    # Verifica si el índice es temporal
-    if not isinstance(pDfEstadoResultados.index, pd.DatetimeIndex):
-        raise ValueError("El índice del DataFrame debe ser un DatetimeIndex.")
     
-    # Extraemos los rubros del dataset
-    rubros = pDfEstadoResultados.columns[:]
+    temporalidad = obtener_temporalidad(pTipo_estado_financiero)
+    
     # Lista de rubros que proyectaremos usando los modelos.
     rubros_proyectar = ["Ventas", "Gastos de venta y distribución", "Gastos administrativos", "Otros resultados operativos netos", "Resultado financiero", "Otros resultados no operativos netos", "Monto de Pérdidas o Ganancias Extraordinarias"]
-    # Lista de rubros que son calculados a partir de otros rubros.
-    rubro_calcular = ["Costo de ventas", "Utilidad Bruta", "Ganancia operativa (EBIT)",  "Ganancias antes de impuestos","Impuesto a la renta", "Ganancia (Pérdida) Neta"]
+   
     # Debido a que cada rubro se proyecta independientemente, se debe crear un modelo para cada rubro.
     modelos = []
     # Creamos una estructura donde almacenaremos las respectivas predicciones.
     df_predicciones = pd.DataFrame()
     
     #Entrenamos los modelos.
-    modelos = entrenar_modelos(rubros_proyectar, pDfEstadoResultados, pTipo_estado_financiero)
+    modelos = entrenar_modelos(rubros_proyectar, pDfEstadoResultados, temporalidad)
     
     # Proyectar los rubros
     # Promedio del porcentaje de costo de ventas sobre las ventas.
@@ -116,7 +126,6 @@ def projection_estado_resultados(pCantidad_periodos_proyectar, pDfEstadoResultad
         
     # Calculamos los rubros que dependen de los proyectados.
     # Costo de ventas.
-    print(df_predicciones.columns.to_list())
     costo_ventas_proyectado = pd.Series(df_predicciones["Ventas"] * promedio_costo_ventas, name="Costo de ventas")
     df_predicciones = pd.concat([df_predicciones, costo_ventas_proyectado], axis=1)
     
@@ -129,12 +138,18 @@ def projection_estado_resultados(pCantidad_periodos_proyectar, pDfEstadoResultad
     df_predicciones = pd.concat([df_predicciones, EBIT_proyectado], axis=1)
     
     # Ganancias antes de impuestos
+    ganancias_antes_impuestos_proyectado = pd.Series(df_predicciones["Ganancia operativa (EBIT)"] + df_predicciones["Resultado financiero"] + df_predicciones["Otros resultados no operativos netos"] + df_predicciones["Monto de Pérdidas o Ganancias Extraordinarias"], name="Ganancias antes de impuestos")
+    df_predicciones = pd.concat([df_predicciones, ganancias_antes_impuestos_proyectado], axis=1)
     
     #Impuesto a la renta
+    impuesto_renta = pd.Series(df_predicciones["Ganancias antes de impuestos"] * impuesto, name="Impuesto a la renta")
+    df_predicciones = pd.concat([df_predicciones, impuesto_renta], axis=1)
     
     #Ganancias (Pérdida) Neta
+    resultado_neto = pd.Series(df_predicciones["Ganancias antes de impuestos"] + df_predicciones["Impuesto a la renta"], name="Ganancia (Pérdida) Neta")
+    df_predicciones = pd.concat([df_predicciones, resultado_neto], axis=1)
     
-    
+    #Añadimos los rubros proyectados a nuestro dataset original.
     
     # Generar nuevas fechas para las predicciones.
     ultimaFecha = pDfEstadoResultados.index[-1]
@@ -145,10 +160,14 @@ def projection_estado_resultados(pCantidad_periodos_proyectar, pDfEstadoResultad
     
     # Asignar nuevas fechas como índice
     nuevasFechas = pd.date_range(start=ultimaFecha, periods=pCantidad_periodos_proyectar + 1, freq=frecuencia)[1:]
-    df_predicciones.index = nuevasFechas  # Asignar nuevas fechas como índice
+    df_predicciones.index = nuevasFechas  
     
     # Concatenar predicciones al DataFrame original
-    return df_predicciones
+    pDfEstadoResultados = pd.concat([pDfEstadoResultados, df_predicciones], axis=1)
+    return pDfEstadoResultados
+
+   
+   
 
         
     
