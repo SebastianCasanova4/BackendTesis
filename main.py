@@ -2,9 +2,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 import pandas as pd
 import joblib
 from fastapi.middleware.cors import CORSMiddleware
-
-
-from assets.models.predictionsModel import projection
+from assets.models.predictionsModel import projection_Estado_Resultados
 from assets.scripts.dataSeparation_utils import dataSeparation
 from assets.scripts.upload_utils import dataUpload
 
@@ -68,7 +66,7 @@ def upload_file(file: UploadFile = File(...)):
         dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
         # exportar el df a excel
         # dfEstadoResultados.to_excel(f"./output/{filename}_EstadoResultados.xlsx")
-        proyeccionEstadoResultados = projection(4, dfEstadoResultados)
+        proyeccionEstadoResultados = projection_Estado_Resultados(4, dfEstadoResultados)
         filename = filename.split(".")[0]
         proyeccionEstadoResultados.to_excel(f"./output/{filename}_ProyeccionEstadoResultados.xlsx")
         return {"message": response}

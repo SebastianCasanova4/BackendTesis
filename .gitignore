@@ -28,3 +28,7 @@ __pycache__/
 
 # Ignorar archivos de caché de Python
 .cache/
+
+# Ignorar archivos subidos y procesados
+uploads/
+output/
