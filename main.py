@@ -2,9 +2,10 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 import pandas as pd
 import joblib
 from fastapi.middleware.cors import CORSMiddleware
-from assets.models.predictionsModel import projection_Estado_Resultados
+from assets.models.predictionsModel import projection_Balance_General, projection_Estado_Resultados, projection_Flujo_Efectivo
 from assets.scripts.dataSeparation_utils import dataSeparation
 from assets.scripts.upload_utils import dataUpload
+import os
 
 
 
@@ -63,12 +64,37 @@ def proyectar_balance():
 def upload_file(file: UploadFile = File(...)):
     try:
         response, filename = dataUpload(file)
-        dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
+        try:
+            dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error al separar los datos: {e}")
         # exportar el df a excel
         # dfEstadoResultados.to_excel(f"./output/{filename}_EstadoResultados.xlsx")
-        proyeccionEstadoResultados = projection_Estado_Resultados(4, dfEstadoResultados)
+        try:
+            proyeccionEstadoResultados = projection_Estado_Resultados(4, dfEstadoResultados)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error al proyectar el estado de resultados: {e}")
+        resultadosNetosProyectados = proyeccionEstadoResultados["Ganancia (Pérdida) Neta"][-4:]
+        
+        try:
+            proyeccionBalanceGeneral = projection_Balance_General(4, dfBalanceGeneral, resultadosNetosProyectados)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error al proyectar el balance general: {e}")
+        
+        try:
+            proyeccionFlujoEfectivo = projection_Flujo_Efectivo(4, dfFlujoEfectivo)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error al proyectar el flujo de efectivo: {e}") 
+
         filename = filename.split(".")[0]
-        proyeccionEstadoResultados.to_excel(f"./output/{filename}_ProyeccionEstadoResultados.xlsx")
+        # Crear directorio para guardar los archivos
+        if not os.path.exists(f"./output/{filename}/"):
+            os.makedirs(f"./output/{filename}/")
+
+        directorioArchivo = f"./output/{filename}/"
+        proyeccionEstadoResultados.to_excel(directorioArchivo+f"{filename}_ProyeccionEstadoResultados.xlsx")
+        proyeccionBalanceGeneral.to_excel(directorioArchivo+f"{filename}_ProyeccionBalanceGeneral.xlsx")
+        proyeccionFlujoEfectivo.to_excel(directorioArchivo+f"{filename}_ProyeccionFlujoEfectivo.xlsx")
         return {"message": response}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al procesar el archivo: {e}")

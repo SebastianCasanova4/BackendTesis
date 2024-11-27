@@ -81,8 +81,160 @@ def dataSeparation(filename):
     utilidadNeta = dfEstadoResultados["Ganancia (Pérdida) Neta"]
     dfEstadoResultadosFinal = pd.DataFrame([ventas,costo_ventas,utilidadBruta,gastosVentaDistribucion,gastosAdministrativos,depreciacionAmortizacion,otrosResultadosOperativos,EBIT,resultadoFinanciero,resultadosNoOperativos,perdidasGananciasExtraordinarias,utilidadAntesDeImpuestos,impuesto,utilidadNeta],index=["Ventas","Costo de ventas","Utilidad Bruta","Gastos de venta y distribución","Gastos administrativos","Gastos de depreciación, amortización y deterioro","Otros resultados operativos netos","Ganancia operativa (EBIT)","Resultado financiero","Otros resultados no operativos netos","Monto de Pérdidas o Ganancias Extraordinarias","Ganancias antes de impuestos","Impuesto a la renta","Ganancia (Pérdida) Neta"]).T
 
+    rubrosBalanceGeneral = [
+        "Activos Totales", "Activos no corrientes",
+        "Propiedad planta y equipo","Activos intangibles y valor llave", "Comerciales y otras cuentas a cobrar no corrientes",
+        "Activos financieros a largo plazo", "Activos diferidos", "Otros activos no corrientes",
+        "Activos Corrientes", 
+        "Inventarios", "Comerciales y otras cuentas a cobrar", "Pagos anticipados, ingresos devengados y otros activos circulantes diferidos",
+        "Activos financieros de corto plazo", "Efectivo o Equivalentes", "Otros Activos Corrientes",
+        "Activos del grupo de disposición clasificados como mantenidos para la venta",
 
+        "Total de patrimonio y pasivos", "Total de patrimonio",
+        "Capital Suscrito", "Resultados acumulados", "Ganancia o Pérdida del Periodo", "Otro patrimonio",
+
+        "Pasivos Totales", "Pasivos no corrientes",
+        "Créditos y préstamos no corrientes", "Otras cuentas por pagar no corrientes",
+        "Otros pasivos no corrientes", 
+        
+        "Pasivos Corrientes"
+        "Créditos y préstamos corrientes", "Comerciales y otras cuentas a pagar",
+        "Otros pasivos corrientes"
+    ]
+
+    for rubro in rubrosBalanceGeneral:
+        if rubro not in dfBalanceGeneral:
+            dfBalanceGeneral[rubro] = 0
+    
+    activosTotales = dfBalanceGeneral["Activos Totales"]#T
+    activosNoCorrientes = dfBalanceGeneral["Activos no corrientes"]
+    propiedadPlantaEquipo = dfBalanceGeneral["Propiedad, planta y equipo"]#& por y
+    activosIntangibles = dfBalanceGeneral["Activos intangibles y valor llave"]
+    cuentasCobrarNoCorrientes = dfBalanceGeneral["Comerciales y otras cuentas a cobrar no corrientes"]
+    activosFinancierosLargoPlazo = dfBalanceGeneral["Activos financieros a largo plazo"]
+    activosDiferidos = dfBalanceGeneral["Activos diferidos"]
+    otrosActivosNoCorrientes = dfBalanceGeneral["Activos no corrientes"] - propiedadPlantaEquipo - activosIntangibles - cuentasCobrarNoCorrientes - activosFinancierosLargoPlazo - activosDiferidos
+    activosCorrientes = dfBalanceGeneral["Activos Corrientes"]#C
+    inventarios = dfBalanceGeneral["Inventarios"]
+    cuentasCobrar = dfBalanceGeneral["Comerciales y otras cuentas a cobrar"]
+    pagosAnticipados = dfBalanceGeneral["Pagos anticipados, ingresos devengados y otros activos circulantes diferidos"]
+    activosFinancierosCortoPlazo = dfBalanceGeneral["Activos financieros de corto plazo"]
+    efectivoEquivalentes = dfBalanceGeneral["Efectivo o Equivalentes"]
+    otrosActivosCorrientes = dfBalanceGeneral["Activos Corrientes"] - inventarios - cuentasCobrar - pagosAnticipados - activosFinancierosCortoPlazo - efectivoEquivalentes
+
+    totalPatrimonioPasivos = dfBalanceGeneral["Total de patrimonio y pasivos"]#de
+    totalPatrimonio = dfBalanceGeneral["Total de patrimonio"]
+    capitalSuscrito = dfBalanceGeneral["Capital Suscrito"]#S
+    resultadosAcumulados = dfBalanceGeneral["Resultados acumulados"]#o
+    utilidadPeriodo = dfBalanceGeneral["Ganancia o Pérdida del Periodo"]#Ganancia o Pérdida del Periodo
+    otroPatrimonio = dfBalanceGeneral["Total de patrimonio"] - capitalSuscrito - resultadosAcumulados - utilidadPeriodo
+    pasivosTotales = dfBalanceGeneral["Pasivos Totales"]#T
+    pasivosNoCorrientes = dfBalanceGeneral["Pasivos no corrientes"]
+    creditosPrestamosNoCorrientes = dfBalanceGeneral["Créditos y préstamos no corrientes"]
+    cuentasPagarNoCorrientes = dfBalanceGeneral["Otras cuentas por pagar no corrientes"]
+    otrosPasivosNoCorrientes = dfBalanceGeneral["Pasivos no corrientes"] - creditosPrestamosNoCorrientes - cuentasPagarNoCorrientes
+    pasivosCorrientes = dfBalanceGeneral["Pasivos Corrientes"]#C
+    creditosPrestamosCorrientes = dfBalanceGeneral["Créditos y préstamos corrientes"]
+    cuentasPagar = dfBalanceGeneral["Comerciales y otras cuentas a pagar"]
+    otrosPasivosCorrientes = dfBalanceGeneral["Pasivos Corrientes"] - creditosPrestamosCorrientes - cuentasPagar
+
+    dfBalanceGeneralFinal = pd.DataFrame(
+        {
+            "Activos Totales": activosTotales,
+            "Activos No Corrientes": activosNoCorrientes,
+            "Propiedad, Planta y Equipo": propiedadPlantaEquipo,
+            "Activos Intangibles y Valor Llave": activosIntangibles,
+            "Cuentas por Cobrar No Corrientes": cuentasCobrarNoCorrientes,
+            "Activos Financieros a Largo Plazo": activosFinancierosLargoPlazo,
+            "Activos Diferidos": activosDiferidos,
+            "Otros Activos No Corrientes": otrosActivosNoCorrientes,
+            "Activos Corrientes": activosCorrientes,
+            "Inventarios": inventarios,
+            "Cuentas por Cobrar": cuentasCobrar,
+            "Pagos Anticipados": pagosAnticipados,
+            "Activos Financieros de Corto Plazo": activosFinancierosCortoPlazo,
+            "Efectivo o Equivalentes": efectivoEquivalentes,
+            "Otros Activos Corrientes": otrosActivosCorrientes,
+            "Total de Patrimonio y Pasivos": totalPatrimonioPasivos,
+            "Total de Patrimonio": totalPatrimonio,
+            "Capital Suscrito": capitalSuscrito,
+            "Resultados Acumulados": resultadosAcumulados,
+            "Utilidad del Periodo": utilidadPeriodo,
+            "Otro Patrimonio": otroPatrimonio,
+            "Pasivos Totales": pasivosTotales,
+            "Pasivos No Corrientes": pasivosNoCorrientes,
+            "Créditos y Préstamos No Corrientes": creditosPrestamosNoCorrientes,
+            "Cuentas por Pagar No Corrientes": cuentasPagarNoCorrientes,
+            "Otros Pasivos No Corrientes": otrosPasivosNoCorrientes,
+            "Pasivos Corrientes": pasivosCorrientes,
+            "Créditos y Préstamos Corrientes": creditosPrestamosCorrientes,
+            "Cuentas por Pagar": cuentasPagar,
+            "Otros Pasivos Corrientes": otrosPasivosCorrientes
+        }
+    )
+    rubrosFlujoDeCaja = [
+        "Flujo neto de efectivo por (utilizados en) actividades de explotación",			
+                    "Utilidad Neta",			
+                    "Efectivo generado por las operaciones",			
+                    "Impuesto a las ganancias pagado",			
+                    "Otro flujo de efectivo de actividades operativas",			
+        "Flujo neto de efectivo de (utilizadas en) actividades de inversión",			
+                    "Producto de venta de propiedades, planta y equipo"			
+                    "Compra de propiedades, planta y equipo",			
+                    "Compra de activos intangibles",			
+                    "Compra de propiedades de inversión",
+                    "Ingresos por venta de instrumentos financieros",			
+                    "Intereses recibidos",
+                    "Otros flujos de efectivo de actividades inversión",	
+        "Flujo neto de efectivo de (utilizados en) actividades de financiación",            			
+                    "Ingresos procedentes de la emisión de acciones ordinarias",			
+                    "Ingresos procedentes de la emisión de otros instrumentos de capital",			
+                    "Ingresos provenientes de préstamos",			
+                    "Reembolso de préstamos",   			
+                    "Pagos de las obligaciones de arrendamiento financiero",			
+                    "Intereses pagados",			
+                    "Dividendos pagados",			
+                    "Otros flujos de efectivo de actividades financieras",			
+        "Aumento (disminución) neto en efectivo y equivalentes de efectivo",			
+        "Efectivo al inicio del período",			
+        "Efectivo al final del período",			
+        "Flujo de caja libre",			
+        "CAPEX"]
+
+    for rubro in rubrosFlujoDeCaja:
+        if rubro not in dfFlujoEfectivo:
+            dfFlujoEfectivo[rubro] = 0
+    
+    FlujoNetoEfectivoActividadesExplotacion = dfFlujoEfectivo["Flujo neto de efectivo por (utilizados en) actividades de explotación"]
+    UtilidadNeta = dfFlujoEfectivo["Utilidad Neta"]
+    EfectivoGeneradoOperaciones = dfFlujoEfectivo["Efectivo generado por las operaciones"]
+    ImpuestoGananciasPagado = dfFlujoEfectivo["Impuesto a las ganancias pagado"]
+    OtroFlujoEfectivoOperativas = dfFlujoEfectivo["Otro flujo de efectivo de actividades operativas"]
+    FlujoNetoEfectivoActividadesInversion = dfFlujoEfectivo["Flujo neto de efectivo de (utilizadas en) actividades de inversión"]
+    VentaPropiedades = dfFlujoEfectivo["Producto de venta de propiedades, planta y equipo"]
+    CompraPropiedades = dfFlujoEfectivo["Compra de propiedades, planta y equipo"]
+    CompraActivosIntangibles = dfFlujoEfectivo["Compra de activos intangibles"]
+    CompraPropiedadesInversion = dfFlujoEfectivo["Compra de propiedades de inversión"]
+    IngresosVentaInstrumentos = dfFlujoEfectivo["Ingresos por venta de instrumentos financieros"]
+    InteresesRecibidos = dfFlujoEfectivo["Intereses recibidos"]
+    OtrosFlujosEfectivoInversion = dfFlujoEfectivo["Otros flujos de efectivo de actividades inversión"]
+    FlujoNetoEfectivoActividadesFinanciacion = dfFlujoEfectivo["Flujo neto de efectivo de (utilizados en) actividades de financiación"]
+    IngresosEmisionAcciones = dfFlujoEfectivo["Ingresos procedentes de la emisión de acciones ordinarias"]
+    IngresosEmisionOtrosInstrumentos = dfFlujoEfectivo["Ingresos procedentes de la emisión de otros instrumentos de capital"]
+    IngresosProvenientesPrestamos = dfFlujoEfectivo["Ingresos provenientes de préstamos"]
+    ReembolsoPrestamos = dfFlujoEfectivo["Reembolso de préstamos"]
+    PagosObligacionesArrendamiento = dfFlujoEfectivo["Pagos de las obligaciones de arrendamiento financiero"]
+    InteresesPagados = dfFlujoEfectivo["Intereses pagados"]
+    DividendosPagados = dfFlujoEfectivo["Dividendos pagados"]
+    OtrosFlujosEfectivoFinancieras = dfFlujoEfectivo["Otros flujos de efectivo de actividades financieras"]
+    AumentoNetoEfectivo = dfFlujoEfectivo["Aumento (disminución) neto en efectivo y equivalentes de efectivo"]
+    EfectivoInicioPeriodo = dfFlujoEfectivo["Efectivo al inicio del período"]
+    EfectivoFinalPeriodo = dfFlujoEfectivo["Efectivo al final del período"]
+    FlujoCajaLibre = dfFlujoEfectivo["Flujo de caja libre"]
+    CAPEX = dfFlujoEfectivo["CAPEX"]
+
+    dfFlujoEfectivoFinal = pd.DataFrame([FlujoNetoEfectivoActividadesExplotacion, UtilidadNeta, EfectivoGeneradoOperaciones, ImpuestoGananciasPagado, OtroFlujoEfectivoOperativas, FlujoNetoEfectivoActividadesInversion, VentaPropiedades, CompraPropiedades, CompraActivosIntangibles, CompraPropiedadesInversion, IngresosVentaInstrumentos, InteresesRecibidos, OtrosFlujosEfectivoInversion, FlujoNetoEfectivoActividadesFinanciacion, IngresosEmisionAcciones, IngresosEmisionOtrosInstrumentos, IngresosProvenientesPrestamos, ReembolsoPrestamos, PagosObligacionesArrendamiento, InteresesPagados, DividendosPagados, OtrosFlujosEfectivoFinancieras, AumentoNetoEfectivo, EfectivoInicioPeriodo, EfectivoFinalPeriodo, FlujoCajaLibre, CAPEX]).T
 
     
 
-    return dfEstadoResultadosFinal, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas
+    return dfEstadoResultadosFinal, dfBalanceGeneralFinal, dfFlujoEfectivoFinal, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas
