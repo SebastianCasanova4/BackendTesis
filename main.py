@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, File, HTTPException, UploadFile
 import pandas as pd
 import joblib
@@ -5,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from assets.models.predictionsModel import projection_Balance_General, projection_Estado_Resultados, projection_Flujo_Efectivo
 from assets.scripts.dataSeparation_utils import dataSeparation
 from assets.scripts.upload_utils import dataUpload
+from assets.scripts.dataSetsToJSON import transformDataSetsToJSON
 import os
 
 
@@ -64,6 +66,31 @@ def proyectar_balance():
 def upload_file(file: UploadFile = File(...)):
     try:
         response, filename = dataUpload(file)
+        filename = filename.split(".")[0]
+        if os.path.exists(f"./output/{filename}/"):
+            # Leer los archivos JSON y convertirlos a objetos Python
+            with open(f"./output/{filename}/estadoResultados.json", "r") as f:
+                jsonEstadoResultados = json.load(f)
+            with open(f"./output/{filename}/balanceGeneral.json", "r") as f:
+                jsonBalanceGeneral = json.load(f)
+            with open(f"./output/{filename}/flujoDeCaja.json", "r") as f:
+                jsonFlujoDeCaja = json.load(f)
+            with open(f"./output/{filename}/datosEmpresa.json", "r") as f:
+                datosEmpresa = json.load(f)
+
+            nombreEmpresa = datosEmpresa["nombreEmpresa"]
+            tipoEstadoFinanciero = datosEmpresa["tipoEstadoFinanciero"]
+
+            # Devuelve los datos como respuesta JSON
+            return {
+                "message": response,
+                "empresa": nombreEmpresa,
+                "tipoEstadoFinanciero": tipoEstadoFinanciero,
+                "estadoResultados": jsonEstadoResultados,
+                "balanceGeneral": jsonBalanceGeneral,
+                "flujoDeCaja": jsonFlujoDeCaja
+            }
+
         try:
             dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
         except Exception as e:
@@ -86,15 +113,12 @@ def upload_file(file: UploadFile = File(...)):
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error al proyectar el flujo de efectivo: {e}") 
 
-        filename = filename.split(".")[0]
         # Crear directorio para guardar los archivos
         if not os.path.exists(f"./output/{filename}/"):
             os.makedirs(f"./output/{filename}/")
 
         directorioArchivo = f"./output/{filename}/"
-        proyeccionEstadoResultados.to_excel(directorioArchivo+f"{filename}_ProyeccionEstadoResultados.xlsx")
-        proyeccionBalanceGeneral.to_excel(directorioArchivo+f"{filename}_ProyeccionBalanceGeneral.xlsx")
-        proyeccionFlujoEfectivo.to_excel(directorioArchivo+f"{filename}_ProyeccionFlujoEfectivo.xlsx")
-        return {"message": response}
+        jsonEstadoResultados, jsonBalanceGeneral, jsonFlujoDeCaja = transformDataSetsToJSON(proyeccionEstadoResultados, proyeccionBalanceGeneral, proyeccionFlujoEfectivo, directorioArchivo, nombreEmpresa=NOMBRE_EMPRESA, tipoEstadoFinanciero=TIPO_ESTADO_FINANCIERO)
+        return {"message": response, "empresa": NOMBRE_EMPRESA, "tipoEstadoFinanciero": TIPO_ESTADO_FINANCIERO, "estadoResultados": jsonEstadoResultados, "balanceGeneral": jsonBalanceGeneral, "flujoDeCaja": jsonFlujoDeCaja}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al procesar el archivo: {e}")

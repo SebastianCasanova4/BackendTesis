@@ -1,6 +1,6 @@
 import pandas as pd
 def dataSeparation(filename):
-    file = pd.read_excel(f"./uploads/{filename}", header=5)
+    file = pd.read_excel(f"./uploads/{filename}.xlsx", header=5)
     NOMBRE_EMPRESA = file.columns[0]
     #Extraemos el tipo de estado financiero, corresponde a la periodicidad este rubro.
     TIPO_ESTADO_FINANCIERO = file.iloc[1,1]
@@ -83,7 +83,7 @@ def dataSeparation(filename):
 
     rubrosBalanceGeneral = [
         "Activos Totales", "Activos no corrientes",
-        "Propiedad planta y equipo","Activos intangibles y valor llave", "Comerciales y otras cuentas a cobrar no corrientes",
+        "Propiedad, planta y equipo","Activos intangibles y valor llave", "Comerciales y otras cuentas a cobrar no corrientes",
         "Activos financieros a largo plazo", "Activos diferidos", "Otros activos no corrientes",
         "Activos Corrientes", 
         "Inventarios", "Comerciales y otras cuentas a cobrar", "Pagos anticipados, ingresos devengados y otros activos circulantes diferidos",
@@ -179,7 +179,7 @@ def dataSeparation(filename):
                     "Impuesto a las ganancias pagado",			
                     "Otro flujo de efectivo de actividades operativas",			
         "Flujo neto de efectivo de (utilizadas en) actividades de inversión",			
-                    "Producto de venta de propiedades, planta y equipo"			
+                    "Producto de venta de propiedades, planta y equipo",		
                     "Compra de propiedades, planta y equipo",			
                     "Compra de activos intangibles",			
                     "Compra de propiedades de inversión",

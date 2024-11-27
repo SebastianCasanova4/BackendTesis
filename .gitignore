@@ -30,5 +30,3 @@ __pycache__/
 .cache/
 
 # Ignorar archivos subidos y procesados
-uploads/
-output/
