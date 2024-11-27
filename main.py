@@ -95,8 +95,7 @@ def upload_file(file: UploadFile = File(...)):
             dfEstadoResultados, dfBalanceGeneral, dfFlujoEfectivo, NOMBRE_EMPRESA, TIPO_ESTADO_FINANCIERO, fechasPeriodicas = dataSeparation(filename)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error al separar los datos: {e}")
-        # exportar el df a excel
-        # dfEstadoResultados.to_excel(f"./output/{filename}_EstadoResultados.xlsx")
+        
         try:
             proyeccionEstadoResultados = projection_Estado_Resultados(4, dfEstadoResultados)
         except Exception as e:

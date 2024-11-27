@@ -1,13 +1,14 @@
 import json
 
 def transformDataSetsToJSON(estadoResultados, balanceGeneral, flujoDeCaja, ruta, nombreEmpresa, tipoEstadoFinanciero):
+    # Convertir los DataFrames directamente a JSON
     jsonEstadoResultados = estadoResultados.to_json(orient='records')
     jsonBalanceGeneral = balanceGeneral.to_json(orient='records')
     jsonFlujoDeCaja = flujoDeCaja.to_json(orient='records')
+    # Crear el diccionario de datos de la empresa
     datosEmpresa = {"nombreEmpresa": nombreEmpresa, "tipoEstadoFinanciero": tipoEstadoFinanciero}
-    json.dumps(datosEmpresa, ensure_ascii=False)
 
-    # Escribir los archivos JSON con encoding UTF-8 y force_ascii=False
+    # Escribir los archivos JSON en formato correcto
     with open(ruta + 'estadoResultados.json', 'w', encoding='utf-8') as file:
         json.dump(json.loads(jsonEstadoResultados), file, ensure_ascii=False, indent=4)
     with open(ruta + 'balanceGeneral.json', 'w', encoding='utf-8') as file:
@@ -17,5 +18,5 @@ def transformDataSetsToJSON(estadoResultados, balanceGeneral, flujoDeCaja, ruta,
     with open(ruta + 'datosEmpresa.json', 'w', encoding='utf-8') as file:
         json.dump(datosEmpresa, file, ensure_ascii=False, indent=4)
 
-    # retornar los json
-    return jsonEstadoResultados, jsonBalanceGeneral, jsonFlujoDeCaja
+    # Retornar los JSON como diccionarios, no como cadenas de texto
+    return json.loads(jsonEstadoResultados), json.loads(jsonBalanceGeneral), json.loads(jsonFlujoDeCaja)
