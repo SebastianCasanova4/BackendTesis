@@ -1,12 +1,14 @@
 import json
 
-def transformDataSetsToJSON(estadoResultados, balanceGeneral, flujoDeCaja, ruta, nombreEmpresa, tipoEstadoFinanciero):
+def transformDataSetsToJSON(estadoResultados, balanceGeneral, flujoDeCaja, ruta, nombreEmpresa, tipoEstadoFinanciero, fechas):
     # Convertir los DataFrames directamente a JSON
     jsonEstadoResultados = estadoResultados.to_json(orient='records')
     jsonBalanceGeneral = balanceGeneral.to_json(orient='records')
     jsonFlujoDeCaja = flujoDeCaja.to_json(orient='records')
     # Crear el diccionario de datos de la empresa
-    datosEmpresa = {"nombreEmpresa": nombreEmpresa, "tipoEstadoFinanciero": tipoEstadoFinanciero}
+    for i in range(len(fechas)):
+        fechas[i] = fechas[i].strftime('%Y')
+    datosEmpresa = {"nombreEmpresa": nombreEmpresa, "tipoEstadoFinanciero": tipoEstadoFinanciero, "fechas": fechas}
 
     # Escribir los archivos JSON en formato correcto
     with open(ruta + 'estadoResultados.json', 'w', encoding='utf-8') as file:
