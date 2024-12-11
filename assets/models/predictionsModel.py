@@ -179,6 +179,11 @@ def projection_Balance_General(cantidadPeriodosPredecir, dataSet, resultadosNeto
         dfPredicciones["Pasivos No Corrientes"]
     )
 
+    dfPredicciones["Total de Patrimonio y Pasivos"] = (
+        dfPredicciones["Pasivos Totales"] +
+        dfPredicciones["Total de Patrimonio"]
+    )
+
     # Concatenar datos originales con predicciones
     dataSet = pd.concat([dataSet, dfPredicciones], axis=0)
     return dataSet
